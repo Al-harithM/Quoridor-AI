@@ -1,7 +1,9 @@
 🧱 Quoridor AI Engine & GUI
+
 A complete Python implementation of the classic abstract strategy game Quoridor, featuring a custom-built, highly optimized artificial intelligence engine and a sleek, multithreaded Tkinter graphical interface.
 
 📋 Table of Contents
+
 About the Project
 
 Game Rules
@@ -17,11 +19,13 @@ Installation & Execution
 Project Structure
 
 🎯 About the Project
+
 This project transforms a standard Quoridor board game into a modern digital experience. It features a responsive, context-aware GUI that allows players to click seamlessly between cells (to move) and gaps (to place walls).
 
 The centerpiece of the project is the custom AI Engine, which utilizes advanced game-tree search algorithms, time-bound iterative deepening, and dynamic memory caching to deliver a deeply challenging opponent that runs in a background thread to maintain flawless UI performance.
 
 📜 Game Rules
+
 Quoridor is a game of maze-building and racing.
 
 Objective: Be the first player to reach any square on the opposite side of the board from where you started.
@@ -33,6 +37,7 @@ Wall Placement: You start with 10 walls. Walls block movement and must span exac
 The Golden Rule: You CANNOT completely box in a player; there must always be at least one valid, open path to their goal.
 
 ✨ Features
+
 Three Difficulty Levels: Easy (Randomized Greedy), Medium (Depth-limited search), and Hard (Time-bound deep search).
 
 Context-Aware Input: No clunky mode-switching buttons. Hover over a tile to preview a move, or hover between tiles to preview wall placements.
@@ -44,6 +49,7 @@ Undo/Redo System: Full state-saving allows you to step backward and forward thro
 Multithreaded Processing: The Tkinter UI remains completely responsive with animated loading indicators while the AI performs millions of calculations in the background.
 
 🧠 The AI Engine (Under the Hood)
+
 The AI opponent (QuoridorAI) is designed to mimic advanced human strategy, utilizing several core algorithms to calculate its moves efficiently.
 
 Core Algorithms
@@ -69,6 +75,7 @@ Flanking & Self-Help Walls: The move generator doesn't just look at blocking the
 Smart Move Ordering: To maximize Alpha-Beta cutoffs, wall placements are pre-scored and sorted by how much they disrupt the opponent's path, ensuring the AI searches the most devastating moves first.
 
 🛠️ Architecture & Technologies
+
 Language: Python 3.x
 
 GUI Framework: Tkinter (Standard GUI library)
