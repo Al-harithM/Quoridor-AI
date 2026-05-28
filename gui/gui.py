@@ -47,13 +47,11 @@ class QuoridorGUI:
         self.offset_x = 20 
         self.offset_y = 50 
 
-        # --- Main Split Layout ---
         self.main_container = tk.Frame(self.window, bg="#F4F6F9")
         self.main_container.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # LEFT COLUMN: Canvas for the Board
         canvas_width = self.board_width + 40 
-        canvas_height = self.board_width + 100 # Increased height for wall inventories
+        canvas_height = self.board_width + 100 
         self.canvas = tk.Canvas(
             self.main_container,
             width=canvas_width,
@@ -63,7 +61,7 @@ class QuoridorGUI:
         )
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10)
 
-        # RIGHT COLUMN: UI Dashboard Panel
+        # righ column
         self.ui_frame = tk.Frame(self.main_container, bg="#F4F6F9")
         self.ui_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=20, pady=20)
 
@@ -90,14 +88,10 @@ class QuoridorGUI:
         
     def run(self):
         self.window.mainloop()
-
-    # ---------------------------------------------------
-    # GAME CONTROL & RESET
-    # ---------------------------------------------------
+    #game contorl
     def start_new_game(self, ai_mode, difficulty="medium"):
         self.is_ai_mode = ai_mode
         
-        # Update badge colors dynamically
         if ai_mode:
             self.ai = QuoridorAI(player_id=2, difficulty=difficulty)
             self.badge_label.config(text=f"Mode: Player vs AI ({difficulty.capitalize()})", bg="#DBEAFE", fg="#1E40AF")
@@ -109,16 +103,13 @@ class QuoridorGUI:
         self.reset_ui()
 
     def reset_ui(self):
-        # 1. Stop AI Timer
         if self.ai_timer:
             self.window.after_cancel(self.ai_timer)
             self.ai_timer = None
 
-        # 2. Reset Logic
         self.game.reset_game()
         self.is_game_over = False
         
-        # 3. Reset View
         self.canvas.delete("all")
         self.draw_board()
         self.update_turn_indicator()
@@ -147,7 +138,6 @@ class QuoridorGUI:
         adj_x = x - self.offset_x
         adj_y = y - self.offset_y
 
-        # Out of bounds check
         if adj_x < 0 or adj_y < 0 or adj_x >= self.board_width or adj_y >= self.board_width:
             return None, None
 
@@ -160,19 +150,15 @@ class QuoridorGUI:
         in_x_gap = rx < margin or rx > CELL_SIZE - margin
         in_y_gap = ry < margin or ry > CELL_SIZE - margin
 
-        # If hovering over the 4-way corner intersection, ignore to prevent accidental misclicks
         if in_x_gap and in_y_gap: 
             return None, None
 
-        # Vertical Walls (clicked in a vertical gap)
         if rx > CELL_SIZE - margin: return "V", (gx, gy)
         if rx < margin: return "V", (gx - 1, gy)
         
-        # Horizontal Walls (clicked in a horizontal gap)
         if ry > CELL_SIZE - margin: return "H", (gx, gy)
         if ry < margin: return "H", (gx, gy - 1)
         
-        # Clicked the body of the cell
         return "move", (gx, gy)
     
     def on_click(self, event):
@@ -187,7 +173,6 @@ class QuoridorGUI:
         if intent == "move":
             self.try_move_pawn(gx, gy)
         elif intent in ["H", "V"]:
-            # Prevent attempting to place walls outside the placement grid
             if 0 <= gx < BOARD_SIZE - 1 and 0 <= gy < BOARD_SIZE - 1:
                 self.try_place_wall(gx, gy, intent)
 
@@ -215,9 +200,9 @@ class QuoridorGUI:
             if not (0 <= gx < BOARD_SIZE - 1 and 0 <= gy < BOARD_SIZE - 1): return
             
             if self.game.board.can_place_wall(gx, gy, intent):
-                color = "#90EE90" # Green
+                color = "#90EE90" 
             else:
-                color = "#FFCCCB" # Red
+                color = "#FFCCCB" 
             self._draw_wall_graphic(gx, gy, intent, color, tag="ghost")
 
         elif intent == "move":
@@ -293,19 +278,16 @@ class QuoridorGUI:
         self.is_ai_thinking = True
         self._animate_loading(step=0)
         
-        # Spawn the background thread
         threading.Thread(target=self._ai_worker, daemon=True).start()
 
     def _animate_loading(self, step):
         """Recursively updates the label with animated dots until the AI finishes."""
         if not self.is_ai_thinking:
-            return # Stop animating when the flag is flipped
+            return 
         
-        # Cycle through 0, 1, 2, 3 dots
         dots = "." * (step % 4)
         self.turn_label.config(text=f"Turn: AI is thinking{dots}", fg="#1E40AF")
         
-        # Schedule the next frame of the animation in 400ms
         self.window.after(400, lambda: self._animate_loading(step + 1))
 
     def _ai_worker(self):
@@ -317,7 +299,6 @@ class QuoridorGUI:
             self.window.after(0, lambda: self._apply_ai_move(move_type, data))
         else:
             print("Warning: AI returned None. It might be trapped.")
-            # Safely stop the animation even on failure
             self.window.after(0, self._stop_ai_animation)
 
     def _stop_ai_animation(self):
@@ -329,7 +310,6 @@ class QuoridorGUI:
         """Runs on the main Tkinter thread to safely update the board."""
         if self.is_game_over: return
 
-        # AI finished, turn off the animation flag
         self.is_ai_thinking = False 
 
         if move_type == "move":
@@ -353,23 +333,19 @@ class QuoridorGUI:
         self.draw_board()
         self.update_turn_indicator()
 
-    # ---------------------------------------------------
-    # RENDERING
-    # ---------------------------------------------------
+
     def show_rules(self):
         """Displays a clean, custom popup window with the game rules."""
         rules_window = tk.Toplevel(self.window)
         rules_window.title("How to Play Quoridor")
-        # rules_window.geometry("450x400")
         rules_window.config(bg="#F4F6F9")
         
-        # Make the popup modal (locks the main window until the popup is closed)
         rules_window.transient(self.window)
         rules_window.grab_set()
 
         title = tk.Label(rules_window, text="Quoridor Rules", font=("Arial", 16, "bold"), bg="#F4F6F9", fg="#1E293B")
         title.pack(pady=(20, 10))
-
+        #game's rules
         rules_text = (
             "\U0001f3af Objective:\n"
             "Be the first player to reach any square on the opposite side of the board.\n\n"
@@ -381,20 +357,15 @@ class QuoridorGUI:
             "the opponent's pawn (if there's no wall blocking). \n"
             "- If a jump is blocked by a wall, the player can move diagonally around the "
             "opponent's pawn.\n\n"
-            # "On your turn, you may either move your pawn OR place a wall. "
-            # "Pawns move one square orthogonally (up, down, left, right). "
-            # "If you are adjacent to your opponent, you can jump over them!\n\n"
             "\U0001f9f1 Wall Placement:\n"
             "Click in the gaps between squares to place a wall. You have 10 walls. "
             "Walls block movement and must span exactly two squares. "
             "Rule: You CANNOT completely box in a player; there must always be at least one open path to their goal."
         )
 
-        # Message widget automatically handles text wrapping
         msg = tk.Message(rules_window, text=rules_text, font=("Arial", 11), bg="#F4F6F9", fg="#334155", width=400, justify="left")
         msg.pack(padx=20, pady=5)
 
-        # A sleek button to close the popup
         close_btn = tk.Button(
             rules_window, text="Got it!", command=rules_window.destroy, 
             font=("Arial", 10, "bold"), bg="#3B82F6", fg="white", 
@@ -429,7 +400,6 @@ class QuoridorGUI:
         self.canvas.delete("all")
         margin = CELL_GAP
         
-        # 1. Draw the main board background
         self.canvas.create_rectangle(
             self.offset_x, self.offset_y, 
             self.offset_x + self.board_width, self.offset_y + self.board_width, 
@@ -438,7 +408,6 @@ class QuoridorGUI:
         
         inner = CELL_SIZE - 2 * margin
         
-        # 2. Draw the individual grid tiles
         for i in range(BOARD_SIZE):
             for j in range(BOARD_SIZE):
                 x1 = self.offset_x + i * CELL_SIZE + margin
@@ -446,18 +415,15 @@ class QuoridorGUI:
                 x2 = x1 + inner
                 y2 = y1 + inner
                 
-                # Determine tile color
                 if j == 8: 
-                    tile_color = "#FEE2E2"  # Light Red (Bottom Row)
+                    tile_color = "#FEE2E2"  
                 elif j == 0: 
-                    tile_color = "#DBEAFE"  # Light Blue (Top Row)
+                    tile_color = "#DBEAFE"  
                 else:
-                    tile_color = "#FDFDFD"  # Standard White
+                    tile_color = "#FDFDFD"  
 
-                # Draw ONE tile using the determined color
                 self.canvas.create_rectangle(x1, y1, x2, y2, outline="#E9ECEF", fill=tile_color)
 
-        # 3. Draw placed walls
         for (x, y, orientation) in self.game.board.walls:
             owner = self.game.board.wall_owners.get((x, y, orientation), 1)
             
@@ -465,12 +431,10 @@ class QuoridorGUI:
             
             self._draw_wall_graphic(x, y, orientation, wall_color)
 
-        # 4. Draw player pawns
         for player, pos in self.game.board.pawns.items():
             color = "#3B82F6" if player == 1 else "#EF4444"
             self._draw_pawn(pos, color)
 
-        # 5. Draw the top and bottom wall inventory
         self._draw_visual_inventory()
 
         
@@ -478,7 +442,6 @@ class QuoridorGUI:
         x, y = pos
         margin = CELL_GAP * 1.2
         
-        # Apply offset to center point
         cx = self.offset_x + x * CELL_SIZE + (CELL_SIZE / 2)
         cy = self.offset_y + y * CELL_SIZE + (CELL_SIZE / 2)
         radius = (CELL_SIZE - margin * 2) / 2
